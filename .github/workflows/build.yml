@@ -31,8 +31,15 @@ jobs:
       - name: Zip build output
         shell: pwsh
         run: |
+          $paths = @()
+          if (Test-Path "TS SE Tool\bin\Release") { $paths += "TS SE Tool\bin\Release\*" }
+          if (Test-Path "TS SET Updater\bin\Release") { $paths += "TS SET Updater\bin\Release\*" }
+          if ($paths.Count -eq 0) {
+            Write-Error "No Release output folders found."
+            exit 1
+          }
           $out = "TS-SE-Tool-build.zip"
-          Compress-Archive -Path "TS SE Tool\bin\Release\*", "TS SET Updater\bin\Release\*" -DestinationPath $out
+          Compress-Archive -Path $paths -DestinationPath $out
           echo "ZIP_PATH=$out" >> $env:GITHUB_ENV
 
       - name: Create Release
