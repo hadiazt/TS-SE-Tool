@@ -1,0 +1,33 @@
+name: Build TS SE Tool
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore "TS SE Tool.sln"
+
+      - name: Build solution
+        run: msbuild "TS SE Tool.sln" /p:Configuration=Release /p:Platform="Any CPU"
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: TS-SE-Tool-build
+          path: |
+            **/bin/Release/**
