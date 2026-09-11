@@ -5,6 +5,9 @@ on:
   push:
     branches: [ master ]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -25,9 +28,16 @@ jobs:
       - name: Build solution
         run: msbuild "TS SE Tool.sln" /p:Configuration=Release /p:Platform="Any CPU"
 
-      - name: Upload build output
-        uses: actions/upload-artifact@v4
+      - name: Zip build output
+        shell: pwsh
+        run: |
+          $out = "TS-SE-Tool-build.zip"
+          Compress-Archive -Path "TS SE Tool\bin\Release\*", "TS SET Updater\bin\Release\*" -DestinationPath $out
+          echo "ZIP_PATH=$out" >> $env:GITHUB_ENV
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: TS-SE-Tool-build
-          path: |
-            **/bin/Release/**
+          tag_name: build-${{ github.run_number }}
+          name: Build ${{ github.run_number }}
+          files: ${{ env.ZIP_PATH }}
