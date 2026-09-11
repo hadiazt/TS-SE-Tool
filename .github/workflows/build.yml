@@ -28,23 +28,11 @@ jobs:
       - name: Build solution
         run: msbuild "TS SE Tool.sln" /p:Configuration=Release /p:Platform="Any CPU"
 
-      - name: Zip build output
-        shell: pwsh
-        run: |
-          $paths = @()
-          if (Test-Path "TS SE Tool\bin\Release") { $paths += "TS SE Tool\bin\Release\*" }
-          if (Test-Path "TS SET Updater\bin\Release") { $paths += "TS SET Updater\bin\Release\*" }
-          if ($paths.Count -eq 0) {
-            Write-Error "No Release output folders found."
-            exit 1
-          }
-          $out = "TS-SE-Tool-build.zip"
-          Compress-Archive -Path $paths -DestinationPath $out
-          echo "ZIP_PATH=$out" >> $env:GITHUB_ENV
-
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
           name: Build ${{ github.run_number }}
-          files: ${{ env.ZIP_PATH }}
+          files: |
+            TS SE Tool/bin/Release/*.exe
+            TS SET Updater/bin/Release/*.exe
